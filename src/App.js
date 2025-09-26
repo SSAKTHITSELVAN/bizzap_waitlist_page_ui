@@ -67,16 +67,16 @@ function App() {
 
       <div className="content-wrapper">
         {/* Header with Logo */}
-        <header className="header">
-          <div className="logo-section">
-            {/* <img 
-              src="https://image2url.com/images/1758185046787-549ef537-216c-408a-91b0-51d04dec902f.png" 
+        {/* Header with Logo */}
+        <header className="text-center relative z-20 mb-2">
+          <div className="flex items-center justify-center gap-4 mb-1">
+            <img 
+              src="https://image2url.com/images/1758889500786-3875fb19-6cb8-473d-a342-5c6b41269ff0.png" 
               alt="Bizzap Logo" 
-              className="logo-image"
-            /> */}
-            <h1 className="logo">bizzap</h1>
+              className="w-34 h-12 rounded-xl shadow-lg object-cover"
+            />
           </div>
-          <p className="tagline">Sourcing is now social</p>
+          <p className="text-sm font-normal opacity-90 font-sans">Sourcing Made Social</p>
         </header>
 
         {/* Main Content */}
