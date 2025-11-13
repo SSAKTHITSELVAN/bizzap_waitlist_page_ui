@@ -1,455 +1,413 @@
-// // src/App.js
-// import React, { useState } from 'react';
-// import { Phone, Send, CheckCircle, MessageCircle, ArrowRight, X } from 'lucide-react';
-// import './App.css';
-
-// function App() {
-//   const [phoneNumber, setPhoneNumber] = useState('');
-//   const [countryCode, setCountryCode] = useState('+91');
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-//   const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(false);
-
-//   const handlePhoneNumberChange = (e) => {
-//     const value = e.target.value;
-//     setPhoneNumber(value);
-//     const phoneRegex = /^\d{10}$/;
-//     setIsValidPhoneNumber(phoneRegex.test(value));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     if (!isValidPhoneNumber) {
-//       alert("Please enter a valid 10-digit phone number.");
-//       return;
-//     }
-
-//     setIsLoading(true);
-    
-//     // Submit to Google Forms
-//     const fullPhoneNumber = countryCode + phoneNumber;
-//     const formData = new FormData();
-//     formData.append('entry.1658933364', fullPhoneNumber);
-    
-//     try {
-//       await fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSfGsdHitQ5v18ZnCcLMZ3WvTc_GAoZKXkJCFVHbI70ph2J0kQ/formResponse', {
-//         method: 'POST',
-//         mode: 'no-cors',
-//         body: formData
-//       });
-//     } catch (error) {
-//       console.error('Failed to submit:', error);
-//     }
-    
-//     setIsLoading(false);
-//     setShowSuccessPopup(true);
-//     setPhoneNumber('');
-//     setIsValidPhoneNumber(false);
-//   };
-
-//   const handleClosePopup = () => {
-//     setShowSuccessPopup(false);
-//   };
-
-//   const handleJoinWhatsApp = () => {
-//     window.open('https://chat.whatsapp.com/F5j2hxwXxpDE1BeMLKG8lZ?mode=ems_wa_t', '_blank');
-//     setShowSuccessPopup(false);
-//   };
-
-//   return (
-//     <div className="app-container">
-//       {/* Floating Background Elements */}
-//       <div className="floating-elements">
-//         <div className="floating-circle circle-1"></div>
-//         <div className="floating-circle circle-2"></div>
-//         <div className="floating-circle circle-3"></div>
-//       </div>
-
-//       <div className="content-wrapper">
-//         {/* Header with Logo */}
-//         {/* Header with Logo */}
-//         <header className="text-center relative z-20 mb-2">
-//           <div className="flex items-center justify-center gap-4 mb-1">
-//             <img 
-//               src="https://image2url.com/images/1758889500786-3875fb19-6cb8-473d-a342-5c6b41269ff0.png" 
-//               alt="Bizzap Logo" 
-//               className="w-34 h-12 rounded-xl shadow-lg object-cover"
-//             />
-//           </div>
-//           <p className="text-sm font-normal opacity-90 font-sans">Sourcing Made Social</p>
-//         </header>
-
-//         {/* Main Content */}
-//         <main className="main-content">
-//           {/* Hero Section */}
-//           <div className="hero-section">
-//             <div className="hero-subtitle">
-//               Join the waitlist and get 3 months premium subscription for free
-//             </div>
-//           </div>
-          
-//           {/* Premium Features */}
-//           <div className="premium-badge">
-//             <h3 className="premium-title">Bizzap Premium Benefits</h3>
-//             <ul className="premium-features">
-//               <li>Post Requirements</li>
-//               <li>Get Free Leads</li>
-//               <li>Company Verified Badge</li>
-//               <li>Product Catalogue</li>
-//               <li>AI Business Assistant</li>
-//             </ul>
-//           </div>
-
-//           {/* Phone Form */}
-//           <div className="waitlist-form">
-//             <form onSubmit={handleSubmit}>
-//               <div className="form-group">
-//                 <div className={`input-wrapper ${!isValidPhoneNumber && phoneNumber.length > 0 ? 'invalid-input' : ''}`}>
-//                   <Phone className="input-icon" />
-//                   <input
-//                     type="text"
-//                     value={countryCode}
-//                     onChange={(e) => setCountryCode(e.target.value)}
-//                     className="country-code-input"
-//                   />
-//                   <input
-//                     type="text"
-//                     value={phoneNumber}
-//                     onChange={handlePhoneNumberChange}
-//                     placeholder="Enter your phone number"
-//                     className="phone-number-input"
-//                     required
-//                   />
-//                 </div>
-//               </div>
-//               <button 
-//                 type="submit" 
-//                 className="join-button"
-//                 disabled={isLoading || !isValidPhoneNumber}
-//               >
-//                 {isLoading ? (
-//                   <div className="loading-content">
-//                     <div className="spinner"></div>
-//                     <span>Processing...</span>
-//                   </div>
-//                 ) : (
-//                   <div className="button-content">
-//                     <Send className="button-icon" />
-//                     <span>Join Waitlist Now</span>
-//                   </div>
-//                 )}
-//               </button>
-//             </form>
-//           </div>
-//         </main>
-        
-//         {/* Footer with Copyright */}
-//         <footer className="footer">
-//           <p>Trusted by 100+ businesses already</p>
-//         </footer>
-//       </div>
-
-//       {/* Success Popup Modal */}
-//       {showSuccessPopup && (
-//         <div className="popup-overlay">
-//           <div className="popup-container">
-//             {/* Close Button */}
-//             <button onClick={handleClosePopup} className="popup-close-btn">
-//               <X className="w-5 h-5" />
-//             </button>
-
-//             {/* Success Content */}
-//             <div className="popup-content">
-//               <CheckCircle className="popup-success-icon" />
-//               <h3 className="popup-title">Welcome aboard!</h3>
-//               <p className="popup-message">
-//                 You're now on the waitlist. We'll notify you when Bizzap launches!
-//               </p>
-
-//               {/* Action Buttons */}
-//               <div className="popup-buttons">
-//                 <button 
-//                   onClick={handleJoinWhatsApp}
-//                   className="whatsapp-btn"
-//                 >
-//                   <MessageCircle className="w-4 h-4" />
-//                   <span>Join WhatsApp Group</span>
-//                   <ArrowRight className="w-4 h-4" />
-//                 </button>
-                
-//                 <button 
-//                   onClick={handleClosePopup}
-//                   className="skip-btn"
-//                 >
-//                   Skip for now
-//                 </button>
-//               </div>
-
-//               {/* Additional Info */}
-//               <p className="popup-info">
-//                 Get instant updates on launch + exclusive features!
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-// export default App;
-
-
-
-
-// src/App.js
 import React, { useState, useRef } from 'react';
-import { Phone, Send, CheckCircle, MessageCircle, ArrowRight, X } from 'lucide-react';
-import './App.css';
+import { Phone, Send, CheckCircle } from 'lucide-react';
 
 function App() {
+  const [step, setStep] = useState('phone'); // 'phone' or 'success'
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(false);
-  const [countryCodeFocused, setCountryCodeFocused] = useState(false);
-  const [hasAutoNavigated, setHasAutoNavigated] = useState(false);
-  const [hasInteractedWithInputs, setHasInteractedWithInputs] = useState(false);
+  const [error, setError] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const countryCodeInputRef = useRef(null);
   const phoneNumberInputRef = useRef(null);
 
   const handlePhoneNumberChange = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.replace(/\D/g, ''); // Only digits
     setPhoneNumber(value);
-    setHasInteractedWithInputs(true);
-    // Allow any number of digits (minimum 1 for validation)
-    setIsValidPhoneNumber(value.trim().length > 0);
+    setError('');
   };
 
   const handleCountryCodeChange = (e) => {
     const value = e.target.value;
-    setCountryCode(value);
-    setHasInteractedWithInputs(true);
-    
-    // Auto-advance to phone number only once when country code looks complete
-    if (!hasAutoNavigated && value.match(/^\+\d{1,4}$/) && value.length >= 3) {
-      setHasAutoNavigated(true);
-      phoneNumberInputRef.current?.focus();
+    if (value === '' || value.match(/^\+?\d*$/)) {
+      setCountryCode(value.startsWith('+') ? value : '+' + value);
+      setError('');
     }
   };
 
-  const handleInputWrapperClick = () => {
-    // Only auto-focus country code on first interaction
-    if (!hasInteractedWithInputs) {
-      countryCodeInputRef.current?.focus();
+  const isValidPhone = phoneNumber.length >= 10;
+
+  const handleSendOtp = () => {
+    if (!isValidPhone) {
+      setError('Please enter a valid phone number');
+      return;
     }
-    // After first interaction, let user click where they want
-  };
 
-  const handlePhoneNumberClick = () => {
-    setHasInteractedWithInputs(true);
-    phoneNumberInputRef.current?.focus();
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isValidPhoneNumber) {
-      alert("Please enter your phone number.");
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms and Conditions');
       return;
     }
 
     setIsLoading(true);
-    
-    // Submit to Google Forms
-    const fullPhoneNumber = countryCode + phoneNumber;
-    const formData = new FormData();
-    formData.append('entry.1658933364', fullPhoneNumber);
-    
-    try {
-      await fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSfGsdHitQ5v18ZnCcLMZ3WvTc_GAoZKXkJCFVHbI70ph2J0kQ/formResponse', {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData
-      });
-    } catch (error) {
-      console.error('Failed to submit:', error);
+    setError('');
+
+    // Simulate OTP sending
+    setTimeout(() => {
+      setIsLoading(false);
+      setStep('success');
+    }, 1500);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && isValidPhone && !isLoading && agreedToTerms) {
+      handleSendOtp();
     }
-    
-    setIsLoading(false);
-    setShowSuccessPopup(true);
-    setPhoneNumber('');
-    setIsValidPhoneNumber(false);
-  };
-
-  const handleClosePopup = () => {
-    setShowSuccessPopup(false);
-  };
-
-  const handleJoinWhatsApp = () => {
-    window.open('https://chat.whatsapp.com/F5j2hxwXxpDE1BeMLKG8lZ?mode=ems_wa_t', '_blank');
-    setShowSuccessPopup(false);
   };
 
   return (
-    <div className="app-container">
-      {/* Floating Background Elements */}
-      <div className="floating-elements">
-        <div className="floating-circle circle-1"></div>
-        <div className="floating-circle circle-2"></div>
-        <div className="floating-circle circle-3"></div>
-      </div>
+    <div style={styles.container}>
+      <div style={styles.card}>
 
-      <div className="content-wrapper">
-        {/* Header with Logo */}
-        <header className="text-center relative z-20 mb-2">
-          <div className="flex items-center justify-center gap-4 mb-1">
-            <img 
-              src="https://i.ibb.co/kgQPFY8D/Bizzap-8.png" 
-              alt="Bizzap Logo" 
-              className="w-34 h-12 rounded-xl shadow-lg object-cover"
-            />
-          </div>
-          <p className="text-sm font-normal opacity-90 font-sans">Sourcing Made Social</p>
-        </header>
 
-        {/* Main Content */}
-        <main className="main-content">
-          {/* Hero Section */}
-          <div className="hero-section">
-            <div className="hero-subtitle">
-              Join the waitlist and get 3 months premium subscription for free
+        {step === 'phone' ? (
+          <>
+            {/* Header */}
+            <div style={styles.header}>
+              <h1 style={styles.title}>Welcome to Bizzap</h1>
+              <p style={styles.subtitle}>Enter your phone number to continue</p>
             </div>
-          </div>
-          
-          {/* Premium Features */}
-          <div className="premium-badge">
-            <h3 className="premium-title">Bizzap Premium Benefits</h3>
-            <ul className="premium-features">
-              <li>Post Requirements</li>
-              <li>Get Free Leads</li>
-              <li>Company Verified Badge</li>
-              <li>Product Catalogue</li>
-              <li>AI Business Assistant</li>
-            </ul>
-          </div>
 
-          {/* Phone Form */}
-          <div className="waitlist-form">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <div 
-                  className={`input-wrapper ${!isValidPhoneNumber && phoneNumber.length > 0 ? 'invalid-input' : ''}`}
-                  onClick={handleInputWrapperClick}
-                >
-                  <Phone className="input-icon" />
-                  <div className="phone-input-container">
-                    <input
-                      ref={countryCodeInputRef}
-                      type="text"
-                      value={countryCode}
-                      onChange={handleCountryCodeChange}
-                      onFocus={() => {
-                        setCountryCodeFocused(true);
-                        setHasInteractedWithInputs(true);
-                      }}
-                      onBlur={() => setCountryCodeFocused(false)}
-                      className="country-code-input"
-                      placeholder="+91"
-                    />
-                    <div className="input-separator">|</div>
-                    <input
-                      ref={phoneNumberInputRef}
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={handlePhoneNumberChange}
-                      onFocus={() => setHasInteractedWithInputs(true)}
-                      onClick={handlePhoneNumberClick}
-                      placeholder="Enter your phone number"
-                      className="phone-number-input"
-                      required
-                    />
-                  </div>
-                </div>
-                {countryCodeFocused && (
-                  <div className="country-hint">
-                    Enter your country code (e.g., +91 for India, +1 for USA, +44 for UK)
-                  </div>
-                )}
+            {/* Error Message */}
+            {error && (
+              <div style={styles.errorBox}>
+                <p style={styles.errorText}>{error}</p>
               </div>
+            )}
+
+            {/* Input Section */}
+            <div style={styles.formContainer}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Phone Number</label>
+                <div style={styles.phoneInputWrapper}>
+                  <input
+                    ref={countryCodeInputRef}
+                    type="text"
+                    value={countryCode}
+                    onChange={handleCountryCodeChange}
+                    onKeyPress={handleKeyPress}
+                    style={styles.countryCodeInput}
+                    placeholder="+91"
+                  />
+                  <div style={styles.separator}>|</div>
+                  <input
+                    ref={phoneNumberInputRef}
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter phone number"
+                    style={styles.phoneInput}
+                    autoFocus
+                  />
+                </div>
+                <p style={styles.hint}>Include country code (e.g., +91 for India)</p>
+              </div>
+
+              {/* Terms and Conditions Checkbox */}
+              <div style={styles.checkboxContainer}>
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreedToTerms}
+                  onChange={(e) => {
+                    setAgreedToTerms(e.target.checked);
+                    setError('');
+                  }}
+                  style={styles.checkbox}
+                />
+                <label htmlFor="terms" style={styles.checkboxLabel}>
+                  I agree to the{' '}
+                  <a 
+                    href="#terms" 
+                    style={styles.link}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert('Terms and Conditions will be displayed here');
+                    }}
+                  >
+                    Terms and Conditions
+                  </a>
+                  {' '}
+                  <a 
+                    href="#terms" 
+                    style={styles.readMoreLink}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert('Terms and Conditions will be displayed here');
+                    }}
+                  >
+                    Read more
+                  </a>
+                </label>
+              </div>
+
               <button 
-                type="submit" 
-                className="join-button"
-                disabled={isLoading || !isValidPhoneNumber}
+                onClick={handleSendOtp}
+                disabled={!isValidPhone || isLoading || !agreedToTerms}
+                style={{
+                  ...styles.button,
+                  ...((!isValidPhone || isLoading || !agreedToTerms) && styles.buttonDisabled)
+                }}
               >
                 {isLoading ? (
-                  <div className="loading-content">
-                    <div className="spinner"></div>
-                    <span>Processing...</span>
-                  </div>
+                  <span style={styles.buttonContent}>
+                    <span style={styles.spinner}></span>
+                    Sending...
+                  </span>
                 ) : (
-                  <div className="button-content">
-                    <Send className="button-icon" />
-                    <span>Join Waitlist Now</span>
-                  </div>
+                  <span style={styles.buttonContent}>
+                    <Send size={18} />
+                    Send OTP
+                  </span>
                 )}
               </button>
-            </form>
-          </div>
-        </main>
-        
-        {/* Footer with Copyright */}
-        <footer className="footer">
-          <p>Trusted by 100+ businesses already</p>
-        </footer>
-      </div>
-
-      {/* Success Popup Modal */}
-      {showSuccessPopup && (
-        <div className="popup-overlay">
-          <div className="popup-container">
-            {/* Close Button */}
-            <button onClick={handleClosePopup} className="popup-close-btn">
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Success Content */}
-            <div className="popup-content">
-              <CheckCircle className="popup-success-icon" />
-              <h3 className="popup-title">Welcome aboard!</h3>
-              <p className="popup-message">
-                You're now on the waitlist. We'll notify you when Bizzap launches!
-              </p>
-
-              {/* Action Buttons */}
-              <div className="popup-buttons">
-                <button 
-                  onClick={handleJoinWhatsApp}
-                  className="whatsapp-btn"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Join WhatsApp Group</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-                
-                <button 
-                  onClick={handleClosePopup}
-                  className="skip-btn"
-                >
-                  Skip for now
-                </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Success State */}
+            <div style={styles.successContainer}>
+              <div style={styles.successIcon}>
+                <CheckCircle size={64} color="#000" />
               </div>
-
-              {/* Additional Info */}
-              <p className="popup-info">
-                Get instant updates on launch + exclusive features!
+              <h2 style={styles.successTitle}>OTP Sent Successfully!</h2>
+              <p style={styles.successMessage}>
+                We've sent a verification code to<br />
+                <strong>{countryCode} {phoneNumber}</strong>
               </p>
             </div>
-          </div>
+          </>
+        )}
+
+        {/* Footer */}
+        <div style={styles.footer}>
+          <p style={styles.copyright}>
+            <strong>© 2025 Bizzap. All rights reserved.</strong>
+          </p>
         </div>
-      )}
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 640px) {
+          .responsive-card {
+            margin: 10px;
+            padding: 24px 20px;
+          }
+        }
+        
+        input::placeholder {
+          color: #999999;
+        }
+      `}</style>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    padding: '20px',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  },
+  card: {
+    width: '100%',
+    maxWidth: '440px',
+    backgroundColor: '#ffffff',
+    border: '2px solid #000000',
+    borderRadius: '12px',
+    padding: '40px 32px',
+    boxShadow: '8px 8px 0px #000000',
+  },
+  logoContainer: {
+    textAlign: 'center',
+    marginBottom: '8px',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '32px',
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: '8px',
+    margin: 0,
+  },
+  subtitle: {
+    fontSize: '15px',
+    color: '#666666',
+    margin: 0,
+    marginTop: '8px',
+  },
+  errorBox: {
+    backgroundColor: '#ffebee',
+    border: '1px solid #000000',
+    borderRadius: '6px',
+    padding: '12px',
+    marginBottom: '20px',
+  },
+  errorText: {
+    color: '#000000',
+    fontSize: '14px',
+    margin: 0,
+    textAlign: 'center',
+  },
+  formContainer: {
+    width: '100%',
+  },
+  inputGroup: {
+    marginBottom: '24px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: '8px',
+  },
+  phoneInputWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    border: '2px solid #000000',
+    borderRadius: '8px',
+    padding: '4px 4px 4px 12px',
+    backgroundColor: '#ffffff',
+  },
+  countryCodeInput: {
+    width: '60px',
+    border: 'none',
+    outline: 'none',
+    fontSize: '16px',
+    padding: '10px 4px',
+    color: '#000000',
+    fontWeight: '500',
+  },
+  separator: {
+    color: '#cccccc',
+    margin: '0 8px',
+    fontSize: '20px',
+  },
+  phoneInput: {
+    flex: 1,
+    border: 'none',
+    outline: 'none',
+    fontSize: '16px',
+    padding: '10px 4px',
+    color: '#000000',
+  },
+  hint: {
+    fontSize: '12px',
+    color: '#666666',
+    marginTop: '6px',
+    margin: 0,
+    marginTop: '6px',
+  },
+  checkboxContainer: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    marginBottom: '20px',
+  },
+  checkbox: {
+    width: '18px',
+    height: '18px',
+    cursor: 'pointer',
+    marginTop: '2px',
+    accentColor: '#000000',
+  },
+  checkboxLabel: {
+    fontSize: '13px',
+    color: '#333333',
+    lineHeight: '1.5',
+    cursor: 'pointer',
+  },
+  link: {
+    color: '#000000',
+    textDecoration: 'underline',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  readMoreLink: {
+    color: '#666666',
+    textDecoration: 'underline',
+    fontSize: '12px',
+    cursor: 'pointer',
+    marginLeft: '4px',
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#000000',
+    color: '#ffffff',
+    border: '2px solid #000000',
+    borderRadius: '8px',
+    padding: '14px 24px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    marginTop: '8px',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  buttonContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  },
+  spinner: {
+    width: '16px',
+    height: '16px',
+    border: '2px solid #ffffff',
+    borderTopColor: 'transparent',
+    borderRadius: '50%',
+    display: 'inline-block',
+    animation: 'spin 0.6s linear infinite',
+  },
+  successContainer: {
+    textAlign: 'center',
+    padding: '20px 0',
+  },
+  successIcon: {
+    marginBottom: '24px',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  successTitle: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: '12px',
+    margin: 0,
+    marginBottom: '12px',
+  },
+  successMessage: {
+    fontSize: '15px',
+    color: '#666666',
+    lineHeight: '1.6',
+    margin: 0,
+  },
+  footer: {
+    marginTop: '40px',
+    paddingTop: '20px',
+    borderTop: '1px solid #e0e0e0',
+    textAlign: 'center',
+  },
+  copyright: {
+    fontSize: '12px',
+    color: '#999999',
+    margin: 0,
+  },
+};
 
 export default App;
