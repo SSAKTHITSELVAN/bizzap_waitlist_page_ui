@@ -50,7 +50,7 @@ export default function AdminDashboard() {
   };
 
   const deleteCompany = async (companyId) => {
-    if (!confirm('Are you sure you want to delete this company?')) return;
+    if (!window.confirm('Are you sure you want to delete this company?')) return;
     
     try {
       await fetch(`${API_BASE}/companies/${companyId}`, {
