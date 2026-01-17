@@ -1,14 +1,30 @@
-// import React, { useState } from 'react';
+// import React, { useState, useEffect } from 'react';
 // import { Send, CheckCircle, Users, Target, TrendingUp, Award, Linkedin, Instagram, Facebook, MessageCircle, ArrowRight, Phone, Twitter } from 'lucide-react';
 // import PublicLeadView from './components/PublicLeadView';
 
 // export default function App() {
-//   // Check if URL has leadId parameter
-//   const urlParams = new URLSearchParams(window.location.search);
-//   const leadId = urlParams.get('leadId');
+//   const [showLeadView, setShowLeadView] = useState(false);
+//   const [leadId, setLeadId] = useState(null);
+
+//   useEffect(() => {
+//     // Check URL path and query parameters
+//     const path = window.location.pathname;
+//     const urlParams = new URLSearchParams(window.location.search);
+//     const id = urlParams.get('leadId');
+
+//     // Show lead view if we're on /dashboard route with leadId
+//     if (path === '/dashboard' && id) {
+//       setLeadId(id);
+//       setShowLeadView(true);
+//     } else if (id) {
+//       // Also handle if leadId is present on any other route
+//       setLeadId(id);
+//       setShowLeadView(true);
+//     }
+//   }, []);
 
 //   // If leadId exists, show PublicLeadView component
-//   if (leadId) {
+//   if (showLeadView && leadId) {
 //     return <PublicLeadView />;
 //   }
 
@@ -372,13 +388,13 @@
 //   );
 // }
 
-
 import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle, Users, Target, TrendingUp, Award, Linkedin, Instagram, Facebook, MessageCircle, ArrowRight, Phone, Twitter } from 'lucide-react';
 import PublicLeadView from './components/PublicLeadView';
+import AdminDashboard from './components/AdminDashboard';
 
 export default function App() {
-  const [showLeadView, setShowLeadView] = useState(false);
+  const [currentView, setCurrentView] = useState('home');
   const [leadId, setLeadId] = useState(null);
 
   useEffect(() => {
@@ -387,23 +403,34 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('leadId');
 
-    // Show lead view if we're on /dashboard route with leadId
-    if (path === '/dashboard' && id) {
-      setLeadId(id);
-      setShowLeadView(true);
-    } else if (id) {
-      // Also handle if leadId is present on any other route
-      setLeadId(id);
-      setShowLeadView(true);
+    // Route to admin dashboard
+    if (path === '/admin') {
+      setCurrentView('admin');
+      return;
     }
+
+    // Route to lead view if we have a leadId
+    if ((path === '/dashboard' && id) || id) {
+      setLeadId(id);
+      setCurrentView('lead');
+      return;
+    }
+
+    // Default to home
+    setCurrentView('home');
   }, []);
 
-  // If leadId exists, show PublicLeadView component
-  if (showLeadView && leadId) {
+  // Show admin dashboard
+  if (currentView === 'admin') {
+    return <AdminDashboard />;
+  }
+
+  // Show lead view
+  if (currentView === 'lead' && leadId) {
     return <PublicLeadView />;
   }
 
-  // Otherwise, show the portfolio/landing page
+  // Show home/portfolio page
   return <BizzapPortfolio />;
 }
 
