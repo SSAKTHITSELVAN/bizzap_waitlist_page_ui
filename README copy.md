@@ -1,4 +1,12 @@
-
+cd ~/bizzap_waitlist_page_ui
+git pull origin main
+npm install
+npm run build
+sudo rm -rf /var/www/bizzap-waitlist/*
+sudo cp -r build/* /var/www/bizzap-waitlist/
+sudo chown -R www-data:www-data /var/www/bizzap-waitlist/
+sudo chmod -R 755 /var/www/bizzap-waitlist/
+sudo systemctl restart nginx
 
 // // src/App.js
 // import React, { useState, useRef } from 'react';
