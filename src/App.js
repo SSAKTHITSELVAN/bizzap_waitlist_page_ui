@@ -1,8 +1,8 @@
-
 // import React, { useState, useEffect } from 'react';
 // import { Send, CheckCircle, Users, Target, TrendingUp, Award, Linkedin, Instagram, Facebook, MessageCircle, ArrowRight, Phone, Twitter } from 'lucide-react';
 // import PublicLeadView from './components/PublicLeadView';
 // import AdminDashboard from './components/AdminDashboard';
+// import LeadAdminDashboard from './components/LeadAdminDashboard';
 
 // export default function App() {
 //   const [currentView, setCurrentView] = useState('home');
@@ -14,7 +14,13 @@
 //     const urlParams = new URLSearchParams(window.location.search);
 //     const id = urlParams.get('leadId');
 
-//     // Route to admin dashboard
+//     // Route to lead admin dashboard
+//     if (path === '/admin/leads') {
+//       setCurrentView('leadAdmin');
+//       return;
+//     }
+
+//     // Route to main admin dashboard
 //     if (path === '/admin') {
 //       setCurrentView('admin');
 //       return;
@@ -31,7 +37,12 @@
 //     setCurrentView('home');
 //   }, []);
 
-//   // Show admin dashboard
+//   // Show lead admin dashboard
+//   if (currentView === 'leadAdmin') {
+//     return <LeadAdminDashboard />;
+//   }
+
+//   // Show main admin dashboard
 //   if (currentView === 'admin') {
 //     return <AdminDashboard />;
 //   }
@@ -402,11 +413,13 @@
 // }
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle, Users, Target, TrendingUp, Award, Linkedin, Instagram, Facebook, MessageCircle, ArrowRight, Phone, Twitter } from 'lucide-react';
 import PublicLeadView from './components/PublicLeadView';
 import AdminDashboard from './components/AdminDashboard';
 import LeadAdminDashboard from './components/LeadAdminDashboard';
+import PrivacyPolicy from './components/PrivacyPolicy'; // Ensure the path matches where you saved PrivacyPolicy.js
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -427,6 +440,12 @@ export default function App() {
     // Route to main admin dashboard
     if (path === '/admin') {
       setCurrentView('admin');
+      return;
+    }
+
+    // Route to Privacy Policy (handling both spellings)
+    if (path === '/policies' || path === '/polices' || path === '/privacy-policy') {
+      setCurrentView('privacy');
       return;
     }
 
@@ -451,6 +470,11 @@ export default function App() {
     return <AdminDashboard />;
   }
 
+  // Show privacy policy
+  if (currentView === 'privacy') {
+    return <PrivacyPolicy />;
+  }
+
   // Show lead view
   if (currentView === 'lead' && leadId) {
     return <PublicLeadView />;
@@ -460,6 +484,7 @@ export default function App() {
   return <BizzapPortfolio />;
 }
 
+// --- Main Portfolio/Landing Component ---
 function BizzapPortfolio() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
@@ -811,6 +836,7 @@ function BizzapPortfolio() {
       <div className="max-w-6xl mx-auto px-6 py-8 text-center text-blue-300 text-sm">
         <p>© 2025 Bizzap. Redefining B2B E-commerce from Static to Social with AI-Automation.</p>
         <p className="mt-2">Support: mathan@bizzap.app | +91 90033 88830</p>
+        <p className="mt-2 opacity-60 hover:opacity-100 transition"><a href="/policies">Privacy Policy</a></p>
       </div>
     </div>
   );
