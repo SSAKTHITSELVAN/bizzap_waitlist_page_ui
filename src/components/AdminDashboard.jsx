@@ -1,17 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Users, TrendingUp, Building2, Activity, Search, Trash2, Eye, BarChart3, PieChart, Calendar, ChevronDown, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+// import React, { useState, useEffect } from 'react';
+import { 
+  Users, TrendingUp, Building2, Activity, Search, Trash2, Eye, 
+  BarChart3, PieChart, Calendar, ChevronDown, ChevronUp, 
+  AlertCircle, CheckCircle2, Clock, Zap, Target, ArrowRight
+} from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  AreaChart, Area, PieChart as RePieChart, Pie, Cell, Legend 
+} from 'recharts';
 
-const API_BASE = 'https://api.bizzap.app/admin';
+const API_COMPANIES = 'https://api.bizzap.app/admin/companies';
+const API_LEADS = 'https://api.bizzap.app/admin/leads';
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [companies, setCompanies] = useState([]);
-  const [metrics, setMetrics] = useState(null);
-  const [activeUsers, setActiveUsers] = useState(null);
+  const [compAnalytics, setCompAnalytics] = useState(null);
+  const [leadSummary, setLeadSummary] = useState(null);
+  const [companyMetrics, setCompanyMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCompany, setSelectedCompany] = useState(null);
   const [expandedCompany, setExpandedCompany] = useState(null);
+  const [selectedCompanyData, setSelectedCompanyData] = useState(null);
 
   useEffect(() => {
     fetchAllData();
@@ -20,19 +31,22 @@ export default function AdminDashboard() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [companiesRes, metricsRes, activeUsersRes] = await Promise.all([
-        fetch(`${API_BASE}/companies`),
-        fetch(`${API_BASE}/companies/metrics/company-breakdown`),
-        fetch(`${API_BASE}/companies/metrics/active-users`)
+      const [companiesRes, compAnalyticsRes, leadSummaryRes, companyMetricsRes] = await Promise.all([
+        fetch(`${API_COMPANIES}`),
+        fetch(`${API_COMPANIES}/analytics/comprehensive`),
+        fetch(`${API_LEADS}/analytics/summary`),
+        fetch(`${API_COMPANIES}/metrics/company-breakdown`)
       ]);
 
       const companiesData = await companiesRes.json();
-      const metricsData = await metricsRes.json();
-      const activeUsersData = await activeUsersRes.json();
+      const compAnalyticsData = await compAnalyticsRes.json();
+      const leadSummaryData = await leadSummaryRes.json();
+      const companyMetricsData = await companyMetricsRes.json();
 
       setCompanies(companiesData.data || []);
-      setMetrics(metricsData.data);
-      setActiveUsers(activeUsersData.data);
+      setCompAnalytics(compAnalyticsData.data || null);
+      setLeadSummary(leadSummaryData.data || null);
+      setCompanyMetrics(companyMetricsData.data || null);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
@@ -41,9 +55,9 @@ export default function AdminDashboard() {
 
   const fetchCompanyDetails = async (companyId) => {
     try {
-      const response = await fetch(`${API_BASE}/companies/${companyId}`);
+      const response = await fetch(`${API_COMPANIES}/${companyId}`);
       const data = await response.json();
-      setSelectedCompany(data.data);
+      setSelectedCompanyData(data.data);
     } catch (error) {
       console.error('Failed to fetch company details:', error);
     }
@@ -51,395 +65,246 @@ export default function AdminDashboard() {
 
   const deleteCompany = async (companyId) => {
     if (!window.confirm('Are you sure you want to delete this company?')) return;
-    
     try {
-      await fetch(`${API_BASE}/companies/${companyId}`, {
-        method: 'DELETE'
-      });
+      await fetch(`${API_COMPANIES}/${companyId}`, { method: 'DELETE' });
       fetchAllData();
-      setSelectedCompany(null);
     } catch (error) {
       console.error('Failed to delete company:', error);
     }
   };
 
-  const filteredCompanies = companies.filter(company =>
-    company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.phoneNumber?.includes(searchTerm) ||
-    company.gstNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+  if (loading) return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Activity className="w-12 h-12 text-blue-500 animate-spin" />
+        <p className="text-white text-xl animate-pulse">Initializing Dashboard...</p>
+      </div>
+    </div>
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div className="min-h-screen bg-[#0f172a] text-slate-200">
       {/* Header */}
-      <div className="bg-white/5 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src="https://i.ibb.co/kgQPFY8D/Bizzap-8.png" 
-                alt="Bizzap" 
-                className="h-10 w-auto rounded-lg"
-              />
-              <div>
-                <h1 className="text-xl font-bold">Admin Dashboard</h1>
-                <p className="text-sm text-blue-200">Manage your B2B platform</p>
-              </div>
+      <div className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="https://i.ibb.co/kgQPFY8D/Bizzap-8.png" alt="Bizzap" className="h-10 w-auto rounded-lg shadow-lg shadow-blue-500/20" />
+            <div>
+              <h1 className="text-xl font-bold text-white">Bizzap Admin</h1>
+              <p className="text-xs text-blue-400 font-medium tracking-wider uppercase">Lead Ecosystem Control</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-blue-200">Total Companies</div>
-                <div className="text-2xl font-bold">{companies.length}</div>
+          </div>
+          <div className="flex gap-6 items-center">
+            <div className="text-right">
+              <div className="text-xs text-slate-400">Online Users</div>
+              <div className="text-lg font-bold text-green-400 flex items-center justify-end gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                {compAnalytics?.activity?.currentOnlineUsers || 0}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex gap-2 bg-white/5 backdrop-blur-lg rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
-              activeTab === 'overview'
-                ? 'bg-blue-500 text-white'
-                : 'text-blue-200 hover:bg-white/10'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4 inline mr-2" />
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('companies')}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
-              activeTab === 'companies'
-                ? 'bg-blue-500 text-white'
-                : 'text-blue-200 hover:bg-white/10'
-            }`}
-          >
-            <Building2 className="w-4 h-4 inline mr-2" />
-            Companies
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
-              activeTab === 'analytics'
-                ? 'bg-blue-500 text-white'
-                : 'text-blue-200 hover:bg-white/10'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4 inline mr-2" />
-            Analytics
-          </button>
+      {/* Navigation */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="flex gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
+          <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<BarChart3 size={18}/>} label="Market Overview" />
+          <TabButton active={activeTab === 'companies'} onClick={() => setActiveTab('companies')} icon={<Building2 size={18}/>} label="Company Directory" />
+          <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} icon={<TrendingUp size={18}/>} label="Conversion Funnel" />
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
         {activeTab === 'overview' && (
-          <OverviewTab 
-            companies={companies}
-            metrics={metrics}
-            activeUsers={activeUsers}
-          />
+          <OverviewTab analytics={compAnalytics} leads={leadSummary} metrics={companyMetrics} companies={companies} />
         )}
-
         {activeTab === 'companies' && (
-          <CompaniesTab
-            companies={filteredCompanies}
+          <CompaniesTab 
+            companies={companies.filter(c => c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()))}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            selectedCompany={selectedCompany}
-            setSelectedCompany={setSelectedCompany}
-            fetchCompanyDetails={fetchCompanyDetails}
-            deleteCompany={deleteCompany}
             expandedCompany={expandedCompany}
             setExpandedCompany={setExpandedCompany}
+            selectedCompany={selectedCompanyData}
+            fetchDetails={fetchCompanyDetails}
+            deleteCompany={deleteCompany}
           />
         )}
-
         {activeTab === 'analytics' && (
-          <AnalyticsTab 
-            companies={companies}
-            metrics={metrics}
-          />
+          <AnalyticsTab analytics={compAnalytics} metrics={companyMetrics} />
         )}
       </div>
     </div>
   );
 }
 
-function OverviewTab({ companies, metrics, activeUsers }) {
-  const totalLeads = companies.reduce((sum, c) => sum + (c.leads?.length || 0), 0);
-  const activeLeads = companies.reduce((sum, c) => 
-    sum + (c.leads?.filter(l => l.isActive).length || 0), 0
-  );
-
+function OverviewTab({ analytics, leads, metrics, companies }) {
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <MetricCard
-          icon={<Building2 className="w-6 h-6" />}
-          label="Total Companies"
-          value={metrics?.totalRegisteredCompanies || 0}
-          color="blue"
-        />
-        <MetricCard
-          icon={<Users className="w-6 h-6" />}
-          label="Monthly Active Users"
-          value={activeUsers?.monthlyActiveUsers || 0}
-          color="green"
-        />
-        <MetricCard
-          icon={<Activity className="w-6 h-6" />}
-          label="Total Leads"
-          value={totalLeads}
-          color="purple"
-        />
-        <MetricCard
-          icon={<CheckCircle2 className="w-6 h-6" />}
-          label="Active Leads"
-          value={activeLeads}
-          color="yellow"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard icon={<Building2 />} label="Total Companies" value={analytics?.activity?.totalRegisteredUsers} color="blue" sub="Active on platform" />
+        <KpiCard icon={<Zap />} label="Market Conversion" value={leads?.conversionRate?.conversionRate} color="green" sub="Leads to consumption" />
+        <KpiCard icon={<Activity />} label="Total Inventory" value={leads?.totalLeads} color="purple" sub="Posts available" />
+        <KpiCard icon={<Clock />} label="Avg Session" value={analytics?.engagement?.averageSessionDuration} color="yellow" sub="Time in-app" />
       </div>
 
-      {/* Profile Completion */}
-      <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-        <h3 className="text-xl font-bold mb-4">Profile Completion Rate</h3>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <div className="bg-white/10 rounded-full h-4 overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all"
-                style={{ width: `${metrics?.profileCompletionPercentage || 0}%` }}
-              />
-            </div>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-slate-900/40 rounded-3xl border border-slate-800 p-6">
+          <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+            <TrendingUp className="text-blue-500" /> Signup Momentum
+          </h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analytics?.signups?.monthlyBreakdown?.reverse()}>
+                <defs>
+                  <linearGradient id="colorSignups" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="month" stroke="#475569" fontSize={12} />
+                <YAxis stroke="#475569" fontSize={12} />
+                <Tooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #1e293b'}} />
+                <Area type="monotone" dataKey="count" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSignups)" strokeWidth={3} />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          <div className="text-2xl font-bold">
-            {(metrics?.profileCompletionPercentage || 0).toFixed(1)}%
+        </div>
+
+        <div className="bg-slate-900/40 rounded-3xl border border-slate-800 p-6">
+          <h3 className="text-lg font-bold mb-4">Category Distribution</h3>
+          <div className="space-y-4">
+            {metrics?.categoryBreakdown?.slice(0, 6).map((cat, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between text-xs font-medium text-slate-400">
+                  <span>{cat.category}</span>
+                  <span>{cat.count}</span>
+                </div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="bg-blue-500 h-full rounded-full" style={{ width: `${(cat.count / companies.length) * 100}%` }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Recent Signups */}
-      <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-        <h3 className="text-xl font-bold mb-4">Recent Company Signups</h3>
-        <div className="space-y-3">
-          {companies.slice(0, 5).map(company => (
-            <div key={company.id} className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
-              {company.logo ? (
-                <img 
-                  src={`https://bizzap-chat-files-2024.s3.ap-south-1.amazonaws.com/${company.logo}`}
-                  alt={company.companyName}
-                  className="w-12 h-12 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xl font-bold">
-                  {company.companyName?.[0] || '?'}
+function AnalyticsTab({ analytics, metrics }) {
+  const funnelData = [
+    { name: 'OTP Requested', value: analytics?.conversion?.otpRequested, fill: '#3b82f6' },
+    { name: 'OTP Verified', value: analytics?.conversion?.otpVerified, fill: '#8b5cf6' },
+    { name: 'Registered', value: analytics?.conversion?.registered, fill: '#10b981' }
+  ];
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-6">
+      <div className="bg-slate-900/40 rounded-3xl border border-slate-800 p-6">
+        <h3 className="text-lg font-bold mb-8 flex items-center gap-2"><Target className="text-green-500" /> Registration Funnel</h3>
+        <div className="space-y-8">
+          {funnelData.map((step, i) => (
+            <div key={i} className="relative">
+              <div className="flex justify-between items-end mb-2">
+                <div>
+                  <div className="text-xs text-slate-500 font-bold uppercase tracking-wider">{step.name}</div>
+                  <div className="text-2xl font-bold">{step.value?.toLocaleString()}</div>
                 </div>
-              )}
-              <div className="flex-1">
-                <div className="font-bold">{company.companyName}</div>
-                <div className="text-sm text-blue-200">{company.category || 'Uncategorized'}</div>
+                {i > 0 && (
+                  <div className="text-green-400 text-sm font-bold bg-green-500/10 px-2 py-1 rounded">
+                    {((step.value / funnelData[i-1].value) * 100).toFixed(1)}% Conversion
+                  </div>
+                )}
               </div>
-              <div className="text-sm text-blue-300">
-                {new Date(company.createdAt).toLocaleDateString()}
+              <div className="h-4 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${(step.value / funnelData[0].value) * 100}%`, backgroundColor: step.fill }} />
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      <div className="bg-slate-900/40 rounded-3xl border border-slate-800 p-6">
+        <h3 className="text-lg font-bold mb-6">User Engagement (Top 10)</h3>
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={analytics?.engagement?.topActiveUsers?.slice(0, 10)} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+              <XAxis type="number" hide />
+              <YAxis dataKey="companyName" type="category" stroke="#475569" fontSize={10} width={100} />
+              <Tooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #1e293b'}} />
+              <Bar dataKey="sessionCount" fill="#f59e0b" radius={[0, 4, 4, 0]} label={{ position: 'right', fill: '#94a3b8', fontSize: 10 }} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }
 
-function CompaniesTab({ 
-  companies, 
-  searchTerm, 
-  setSearchTerm, 
-  selectedCompany,
-  setSelectedCompany,
-  fetchCompanyDetails,
-  deleteCompany,
-  expandedCompany,
-  setExpandedCompany
-}) {
+function CompaniesTab({ companies, searchTerm, setSearchTerm, expandedCompany, setExpandedCompany, selectedCompany, fetchDetails, deleteCompany }) {
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <div className="bg-white/5 backdrop-blur-lg rounded-lg p-4 border border-white/10">
-        <div className="flex items-center gap-3">
-          <Search className="w-5 h-5 text-blue-300" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by company name, phone, or GST..."
-            className="flex-1 bg-transparent border-none outline-none text-white placeholder-blue-300"
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+        <input 
+          type="text" placeholder="Search by name, phone or GST..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
+        />
       </div>
 
-      {/* Companies List */}
-      <div className="space-y-4">
+      <div className="grid gap-4">
         {companies.map(company => (
-          <div key={company.id} className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 overflow-hidden">
-            <div className="p-6">
-              <div className="flex items-start gap-4">
-                {company.logo ? (
-                  <img 
-                    src={`https://bizzap-chat-files-2024.s3.ap-south-1.amazonaws.com/${company.logo}`}
-                    alt={company.companyName}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-2xl font-bold">
-                    {company.companyName?.[0] || '?'}
-                  </div>
-                )}
-                
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-xl font-bold">{company.companyName}</h3>
-                      <p className="text-blue-200">{company.category || 'Uncategorized'}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          fetchCompanyDetails(company.id);
-                          setExpandedCompany(expandedCompany === company.id ? null : company.id);
-                        }}
-                        className="p-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition"
-                      >
-                        {expandedCompany === company.id ? (
-                          <ChevronUp className="w-5 h-5" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => deleteCompany(company.id)}
-                        className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
+          <div key={company.id} className="bg-slate-900/40 rounded-2xl border border-slate-800 overflow-hidden hover:border-blue-500/30 transition-all">
+            <div className="p-5 flex items-center gap-6">
+              <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center font-bold text-2xl text-blue-400 border border-slate-700">
+                {company.companyName?.[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold truncate text-white">{company.companyName}</h3>
+                <div className="flex gap-4 text-sm text-slate-400 mt-1">
+                  <span>{company.phoneNumber}</span>
+                  <span className="text-slate-700">•</span>
+                  <span>{company.category || 'Industry Unknown'}</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => { fetchDetails(company.id); setExpandedCompany(expandedCompany === company.id ? null : company.id); }}
+                  className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all"
+                >
+                  {expandedCompany === company.id ? <ChevronUp size={20}/> : <Eye size={20}/>}
+                </button>
+                <button onClick={() => deleteCompany(company.id)} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                  <Trash2 size={20}/>
+                </button>
+              </div>
+            </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <div className="text-blue-300">Phone</div>
-                      <div className="font-medium">{company.phoneNumber}</div>
-                    </div>
-                    <div>
-                      <div className="text-blue-300">GST</div>
-                      <div className="font-medium">{company.gstNumber}</div>
-                    </div>
-                    <div>
-                      <div className="text-blue-300">Leads Posted</div>
-                      <div className="font-medium">{company.postedLeads} / {company.postingQuota}</div>
-                    </div>
-                    <div>
-                      <div className="text-blue-300">Leads Consumed</div>
-                      <div className="font-medium">{company.consumedLeads} / {company.leadQuota}</div>
-                    </div>
+            {expandedCompany === company.id && selectedCompany && (
+              <div className="px-5 pb-6 pt-2 grid md:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-300">
+                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                  <p className="text-xs text-slate-500 uppercase font-bold mb-2">Internal Metrics</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Posts</span> <span className="text-white font-medium">{selectedCompany.postedLeads}/{selectedCompany.postingQuota}</span></div>
+                    <div className="flex justify-between"><span>Lead Usage</span> <span className="text-white font-medium">{selectedCompany.consumedLeads}/{selectedCompany.leadQuota}</span></div>
+                    <div className="flex justify-between"><span>Followers</span> <span className="text-white font-medium">{selectedCompany.followersCount}</span></div>
+                  </div>
+                </div>
+                <div className="md:col-span-2 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                  <p className="text-xs text-slate-500 uppercase font-bold mb-2">Company Information</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="text-slate-500 block">GST</span><span className="text-white">{selectedCompany.gstNumber}</span></div>
+                    <div><span className="text-slate-500 block">Referral Code</span><span className="text-white font-mono">{selectedCompany.referralCode}</span></div>
+                    <div className="col-span-2"><span className="text-slate-500 block">Registered Address</span><span className="text-white line-clamp-1">{selectedCompany.address}</span></div>
                   </div>
                 </div>
               </div>
-
-              {/* Expanded Details */}
-              {expandedCompany === company.id && selectedCompany && (
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <h4 className="font-bold mb-4">Company Details</h4>
-                  
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <div className="text-sm text-blue-300 mb-1">User Name</div>
-                      <div>{selectedCompany.userName}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-blue-300 mb-1">Address</div>
-                      <div className="text-sm">{selectedCompany.address}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-blue-300 mb-1">Referral Code</div>
-                      <div className="font-mono">{selectedCompany.referralCode}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-blue-300 mb-1">Followers</div>
-                      <div>{selectedCompany.followersCount}</div>
-                    </div>
-                  </div>
-
-                  {/* Leads */}
-                  {selectedCompany.leads && selectedCompany.leads.length > 0 && (
-                    <div>
-                      <h5 className="font-bold mb-3">Posted Leads ({selectedCompany.leads.length})</h5>
-                      <div className="space-y-3">
-                        {selectedCompany.leads.map(lead => (
-                          <div key={lead.id} className="bg-white/5 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                              {lead.imageUrl && (
-                                <img 
-                                  src={lead.imageUrl}
-                                  alt={lead.title}
-                                  className="w-20 h-20 rounded-lg object-cover"
-                                />
-                              )}
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <div className="font-bold">{lead.title}</div>
-                                    <div className="text-sm text-blue-200">{lead.description}</div>
-                                  </div>
-                                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                    lead.isActive 
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : 'bg-red-500/20 text-red-400'
-                                  }`}>
-                                    {lead.isActive ? 'Active' : 'Inactive'}
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-3 text-sm">
-                                  <div>
-                                    <div className="text-blue-300">Quantity</div>
-                                    <div>{lead.quantity}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-blue-300">Budget</div>
-                                    <div>{lead.budget || 'N/A'}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-blue-300">Views</div>
-                                    <div>{lead.viewCount}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-blue-300">Consumed</div>
-                                    <div>{lead.consumedCount}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         ))}
       </div>
@@ -447,112 +312,27 @@ function CompaniesTab({
   );
 }
 
-function AnalyticsTab({ companies, metrics }) {
-  const categoryData = metrics?.categoryBreakdown || [];
-  const monthlySignups = metrics?.newSignupsPerMonth || [];
-
+function KpiCard({ icon, label, value, color, sub }) {
+  const styles = {
+    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    green: 'bg-green-500/10 text-green-500 border-green-500/20',
+    purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+    yellow: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+  };
   return (
-    <div className="space-y-6">
-      {/* Category Breakdown */}
-      <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-        <h3 className="text-xl font-bold mb-6">Category Breakdown</h3>
-        <div className="space-y-4">
-          {categoryData.map((cat, idx) => (
-            <div key={idx}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="font-medium">{cat.category || 'Uncategorized'}</div>
-                <div className="text-blue-300">{cat.count} companies</div>
-              </div>
-              <div className="bg-white/10 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full"
-                  style={{ 
-                    width: `${(parseInt(cat.count) / companies.length) * 100}%` 
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Monthly Signups */}
-      <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-        <h3 className="text-xl font-bold mb-6">Monthly Signups</h3>
-        <div className="space-y-3">
-          {monthlySignups.map((month, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-blue-400" />
-                <span>{month.month}</span>
-              </div>
-              <span className="font-bold">{month.count} signups</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Lead Statistics */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-          <h3 className="text-xl font-bold mb-4">Top Lead Posters</h3>
-          <div className="space-y-3">
-            {companies
-              .sort((a, b) => b.postedLeads - a.postedLeads)
-              .slice(0, 5)
-              .map((company, idx) => (
-                <div key={company.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center text-sm font-bold">
-                      #{idx + 1}
-                    </div>
-                    <span className="font-medium">{company.companyName}</span>
-                  </div>
-                  <span className="text-blue-300">{company.postedLeads} leads</span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-          <h3 className="text-xl font-bold mb-4">Top Lead Consumers</h3>
-          <div className="space-y-3">
-            {companies
-              .sort((a, b) => b.consumedLeads - a.consumedLeads)
-              .slice(0, 5)
-              .map((company, idx) => (
-                <div key={company.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-sm font-bold">
-                      #{idx + 1}
-                    </div>
-                    <span className="font-medium">{company.companyName}</span>
-                  </div>
-                  <span className="text-purple-300">{company.consumedLeads} consumed</span>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
+    <div className="bg-slate-900/40 border border-slate-800 p-5 rounded-3xl">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${styles[color]}`}>{icon}</div>
+      <div className="text-2xl font-bold text-white mb-1">{value || '0'}</div>
+      <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</div>
+      <div className="text-[10px] text-slate-600 mt-1">{sub}</div>
     </div>
   );
 }
 
-function MetricCard({ icon, label, value, color }) {
-  const colors = {
-    blue: 'from-blue-500 to-blue-600',
-    green: 'from-green-500 to-green-600',
-    purple: 'from-purple-500 to-purple-600',
-    yellow: 'from-yellow-500 to-yellow-600'
-  };
-
+function TabButton({ active, onClick, icon, label }) {
   return (
-    <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-      <div className={`w-12 h-12 bg-gradient-to-br ${colors[color]} rounded-lg flex items-center justify-center mb-4`}>
-        {icon}
-      </div>
-      <div className="text-3xl font-bold mb-1">{value}</div>
-      <div className="text-blue-200">{label}</div>
-    </div>
+    <button onClick={onClick} className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+      {icon} {label}
+    </button>
   );
 }
