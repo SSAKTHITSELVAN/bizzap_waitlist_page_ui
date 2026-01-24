@@ -30,7 +30,7 @@ export default function App() {
     }
 
     // Route to Privacy Policy
-    if (path === '/policies' || path === '/polices' || path === '/privacy-policy') {
+    if (path === '/privacy-policy' || path === '/polices' || path === '/privacy-policy') {
       setCurrentView('privacy');
       return;
     }
