@@ -9,8 +9,25 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 
+// --- API CONFIGURATION ---
 const API_BASE = 'https://api.bizzap.app/admin/leads';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+// 🔑 STATIC AUTH TOKEN
+const AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOiI2OTA0NzAxZS05NDQ3LTQ2ZjktYWU4ZC1kZmE0YzUzMWFjNjAiLCJwaG9uZU51bWJlciI6Iis5MTkzNjE4MDI1NDciLCJpYXQiOjE3Njk0MTk5MDAsImV4cCI6MTc3MjAxMTkwMH0.lfsNHzO3QFwzLmb_8G9Ur9larFjz-xP3jgrc_XEExV8";
+
+// --- HELPER: Authenticated Fetch ---
+const authenticatedFetch = async (url) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Accept': '*/*',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AUTH_TOKEN}`
+    }
+  });
+  return response;
+};
 
 export default function LeadAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -29,13 +46,14 @@ export default function LeadAdminDashboard() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
+      // Replaced standard fetch with authenticatedFetch
       const [summaryRes, metricsRes, locationRes, timeRes, viewedRes, deactivatedRes] = await Promise.all([
-        fetch(`${API_BASE}/analytics/summary`),
-        fetch(`${API_BASE}/consumed-leads/metrics`),
-        fetch(`${API_BASE}/analytics/by-location`),
-        fetch(`${API_BASE}/analytics/count-by-month`),
-        fetch(`${API_BASE}/analytics/most-viewed`),
-        fetch(`${API_BASE}/analytics/deactivated`)
+        authenticatedFetch(`${API_BASE}/analytics/summary`),
+        authenticatedFetch(`${API_BASE}/consumed-leads/metrics`),
+        authenticatedFetch(`${API_BASE}/analytics/by-location`),
+        authenticatedFetch(`${API_BASE}/analytics/count-by-month`),
+        authenticatedFetch(`${API_BASE}/analytics/most-viewed`),
+        authenticatedFetch(`${API_BASE}/analytics/deactivated`)
       ]);
 
       const [s, m, l, t, v, d] = await Promise.all([
@@ -93,7 +111,6 @@ export default function LeadAdminDashboard() {
 
         {activeTab === 'overview' && (
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Lead Growth Trend */}
             <div className="lg:col-span-2 bg-slate-800/40 backdrop-blur-md rounded-2xl p-6 border border-slate-700">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                 <TrendingUp className="text-blue-400" /> Lead Posting Growth
@@ -117,7 +134,6 @@ export default function LeadAdminDashboard() {
               </div>
             </div>
 
-            {/* Status Breakdown */}
             <div className="bg-slate-800/40 backdrop-blur-md rounded-2xl p-6 border border-slate-700">
               <h3 className="text-lg font-bold mb-6">Deal Status Distribution</h3>
               <div className="h-[250px]">
@@ -148,7 +164,6 @@ export default function LeadAdminDashboard() {
 
         {activeTab === 'conversion' && (
           <div className="grid md:grid-cols-2 gap-6">
-             {/* Top Performing Companies */}
              <div className="bg-slate-800/40 rounded-2xl p-6 border border-slate-700">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <Users className="text-green-400" /> Top Converting Companies
@@ -165,7 +180,6 @@ export default function LeadAdminDashboard() {
                 </div>
              </div>
 
-             {/* Geographic Heatmap List */}
              <div className="bg-slate-800/40 rounded-2xl p-6 border border-slate-700">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <MapPin className="text-purple-400" /> Regional Lead Density
@@ -236,7 +250,6 @@ export default function LeadAdminDashboard() {
   );
 }
 
-// Sub-components for cleaner code
 function TabButton({ active, onClick, icon, label }) {
   return (
     <button
